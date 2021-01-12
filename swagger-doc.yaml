@@ -1,0 +1,504 @@
+# https://editor.swagger.io/
+
+swagger: "2.0"
+info:
+  description: "API publique réalisée avec l'ORM Sequelize à des fins pédagogiques."
+  version: "1.0.0"
+  title: "Doggy API"
+  contact:
+    name: "Profil"
+    url: "https://github.com/FlorianLevsr"
+host: "localhost:3000"
+schemes:
+- "http"
+
+tags:
+- name: "Main"
+  description: "Routes utilisant les méthodes du mainController"
+- name: "Account"
+  description: "Routes utilisant les méthodes du accountController"
+- name: "Dog"
+  description: "Routes utilisant les méthodes du dogController"
+
+paths:
+  /:
+    get:
+      tags:
+      - "Main"
+      summary: "Homepage - courte présentation de l'API"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            $ref: "#/definitions/Homepage"
+            
+  /login:
+    post:
+      description: "login: admin / password: adminpassword - A noter que l'API renvoie également la token jwt, ceci à des fins purement pédagogiques (et pour une question de praticité)"
+      tags:
+      - "Account"
+      summary: "Connecte l'utilisateur"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "username"
+        in: "formData"
+        description: "Le nom d'utilisateur"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "formData"
+        description: "Le mot de passe"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: "Identification échouée - détails fournis"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+  
+  /logout:
+    get:
+      tags:
+      - "Account"
+      summary: "Déconnecte l'utilisateur"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "auth"
+        in: "header"
+        description: "an authorization header"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+              
+  /dogs:
+    get:
+      tags:
+      - "Dog"
+      summary: "Pour récupérer la liste de tous les chiens"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/AllDogs"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+            
+  /dog/{id}:
+    get:
+      tags:
+      - "Dog"
+      summary: "Pour récupérer un chien grâce à son id"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID du chien"
+        required: true
+        type: "integer"
+        maximum: 10.0
+        minimum: 1.0
+        format: "int64"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            $ref: "#/definitions/Dog"
+        "400":
+          description: "Récupération KO - ID ne correspond à aucun chien enregistré"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+            
+  /dogs/male:
+    get:
+      tags:
+      - "Dog"
+      summary: "Pour récupérer la liste de tous les chiens mâles"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            type: "object"
+            properties:
+              data:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Dog"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+                  
+  /dogs/breed:
+    post:
+      tags:
+      - "Dog"
+      summary: "Pour récupérer la liste de tous les chiens en fonction d'une race"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "breed"
+        in: "formData"
+        description: "La race souhaitée"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            type: "object"
+            properties:
+              data:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Dog"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+                  
+  /dog/create:
+    post:
+      tags:
+      - "Dog"
+      summary: "Pour créer un chien"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      
+      - name: "auth"
+        in: "header"
+        description: "Connexion obligatoire - utiliser le token reçu avec /login - format: Bearer {token}"
+        required: true
+        type: "string"
+      - name: "name"
+        in: "formData"
+        description: "Le nom du chien"
+        required: true
+        type: "string"
+      - name: "gender_id"
+        in: "formData"
+        description: "L'id du genre'"
+        required: true
+        type: "integer"
+      - name: "breed_id"
+        in: "formData"
+        description: "L'id de la race"
+        required: true
+        type: "integer"
+      - name: "owner_id"
+        in: "formData"
+        description: "L'id du propriétaire"
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                format: "text"
+              data:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int32"
+                  name:
+                    type: "string"
+                    format: "text"
+                  gender_id:
+                    type: "integer"
+                    format: "int32"
+                  breed_id:
+                    type: "integer"
+                    format: "int32"
+                  owner_id:
+                    type: "integer"
+                    format: "int32"
+        "400":
+          description: "Champ(s) manquant(s)"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+                    
+  /dog/{id}/edit:
+    put:
+      tags:
+      - "Dog"
+      summary: "Pour modifier un chien"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "auth"
+        in: "header"
+        description: "Connexion obligatoire - utiliser le token reçu avec /login - format: Bearer {token}"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        description: "ID du chien à modifier"
+        required: true
+        type: "integer"
+        maximum: 10.0
+        minimum: 1.0
+        format: "int64"
+      - name: "name"
+        in: "formData"
+        description: "Le nom du chien"
+        required: false
+        type: "string"
+      - name: "gender_id"
+        in: "formData"
+        description: "L'id du genre'"
+        required: false
+        type: "integer"
+      - name: "breed_id"
+        in: "formData"
+        description: "L'id de la race"
+        required: false
+        type: "integer"
+      - name: "owner_id"
+        in: "formData"
+        description: "L'id du propriétaire"
+        required: false
+        type: "integer"
+      responses:
+        "200":
+          description: "Opération réussie"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                format: "text"
+              data:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int32"
+                  name:
+                    type: "string"
+                    format: "text"
+                  gender_id:
+                    type: "integer"
+                    format: "int32"
+                  breed_id:
+                    type: "integer"
+                    format: "int32"
+                  owner_id:
+                    type: "integer"
+                    format: "int32"
+        "400":
+          description: "Tous les champs sont vides - Aucune modification n'est apportée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+                    
+  /dog/{id}/delete:
+    delete:
+      tags:
+      - "Dog"
+      summary: "Pour supprimer un chien"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "auth"
+        in: "header"
+        description: "Connexion obligatoire - utiliser le token reçu avec /login - format: Bearer {token}"
+        required: true
+        type: "string"
+      - name: "id"
+        in: "path"
+        description: "ID du chien à supprimer"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: "Suppression KO - L'id renseignée ne fait référence à aucun chien"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "500":
+          description: "Opération échouée"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+              
+            
+            
+definitions:
+  Homepage:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+        format: "text"
+      subtile:
+        type: "string"
+        format: "text"
+      content:
+        type: "string"
+        format: "text"
+        
+  AllDogs:
+    type: "object"
+    properties:
+      data:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            name:
+              type: "string"
+              format: "text"
+            breed: 
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  format: "text"
+            gender: 
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  format: "text"
+            owner: 
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  format: "text"
+            favorite_foods: 
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  format: "text"
+                  
+  Dog:
+    type: "object"
+    properties:
+      data:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+              format: "int32"
+            name:
+              type: "string"
+              format: "text"
+            gender_id:
+              type: "integer"
+              format: "int32"
+            breed_id:
+              type: "integer"
+              format: "int32"
+            owner_id:
+              type: "integer"
+              format: "int32"
+            breed:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                  format: "int32"
+                name:
+                  type: "string"
+                  format: "text"
+            gender:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                  format: "int32"
+                name:
+                  type: "string"
+                  format: "text"
+            owner:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                  format: "int32"
+                name:
+                  type: "string"
+                  format: "text"
+            favorite_foods:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  id:
+                    type: "integer"
+                    format: "int32"
+                  name:
+                    type: "string"
+                    format: "text"
+                  m2m_dog_favorite_food:
+                    type: "object"
+                    properties:
+                      favorite_food_id:
+                        type: "integer"
+                        format: "int32"
+                      dog_id:
+                        type: "integer"
+                        format: "int32"
+                      
+  ApiResponse:
+    type: "object"
+    properties:
+      messsage:
+        type: "string"
+        format: "text"
